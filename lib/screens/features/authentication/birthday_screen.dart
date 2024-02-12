@@ -1,41 +1,35 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiktok_cline/constants/gaps.dart';
 import 'package:tiktok_cline/constants/sizes.dart';
-import 'package:tiktok_cline/screens/features/authentication/email_screen.dart';
 import 'package:tiktok_cline/screens/features/authentication/widgets/form_button.dart';
+import 'package:tiktok_cline/screens/features/onbording/interests_screen.dart';
 
-class UsernameScreen extends StatefulWidget {
-  const UsernameScreen({super.key});
+class BirthdayScreen extends StatefulWidget {
+  const BirthdayScreen({super.key});
 
   @override
-  State<UsernameScreen> createState() => _UsernameScreenState();
+  State<BirthdayScreen> createState() => _BirthdayScreenState();
 }
 
-class _UsernameScreenState extends State<UsernameScreen> {
-  final TextEditingController _usernameController = TextEditingController();
+class _BirthdayScreenState extends State<BirthdayScreen> {
+  final TextEditingController _birthdayController = TextEditingController();
   //텍스트입력을 감지하는 컨트롤러를 선언.
 
-  String _username = "";
+  DateTime initialDate = DateTime.now();
 
   @override
   void initState() {
     //초기화 하는 이유는 그래야 이벤트 리스너를 등록할수 있기 때문
     super.initState();
-
-    _usernameController.addListener(() {
-      //컨트롤러에 이벤트 리스너를 달고 setState안에다 새로운 값을 갱신
-      setState(() {
-        _username = _usernameController.text;
-        //리스너를 통해서 감지한 값을 setState를 통해서 계속 값을 업데이트 해줌
-      });
-    });
+    _setTextFieldDate(initialDate);
   }
 
 //이벤트리스너를 꼭 꺼줘야함
 //안그러면 앱 crashing남 메모리를 잡아먹기 때문
   @override
   void dispose() {
-    _usernameController.dispose();
+    _birthdayController.dispose();
     super.dispose();
     //initstate에서는 super.initState로 일단 정리하고 시작
     //dispose에서는 다 끝나고 나서 super.dispose로 청소
@@ -44,12 +38,19 @@ class _UsernameScreenState extends State<UsernameScreen> {
   void _onNextTap() {
     //참고로 여기서 buildContext context를 안받는 이유는
     //state안에 존재하기때문에 context는 이미 공유되고있는 상태이기 때문
-    if (_username.isEmpty) return;
-    Navigator.of(context).push(
+
+    Navigator.of(context).pushAndRemoveUntil(
+      //push는 뒤로가기가 가능해서 RemoveUntill로 이전페이지 삭제
       MaterialPageRoute(
-        builder: (context) => const EmailScreen(),
+        builder: (context) => const InterestsScreen(),
       ),
+      (route) => false,
     );
+  }
+
+  void _setTextFieldDate(DateTime date) {
+    final textDate = date.toString().split(" ").first;
+    _birthdayController.value = TextEditingValue(text: textDate);
   }
 
   @override
@@ -73,7 +74,7 @@ class _UsernameScreenState extends State<UsernameScreen> {
           children: [
             Gaps.v40,
             const Text(
-              "Create username",
+              "When's your birthday",
               style: TextStyle(
                 fontSize: Sizes.size20,
                 fontWeight: FontWeight.w600,
@@ -81,7 +82,7 @@ class _UsernameScreenState extends State<UsernameScreen> {
             ),
             Gaps.v8,
             const Text(
-              "You can always change this later.",
+              "Your birthday won't be publicly",
               style: TextStyle(
                 fontSize: Sizes.size16,
                 color: Colors.black54,
@@ -89,9 +90,10 @@ class _UsernameScreenState extends State<UsernameScreen> {
             ),
             Gaps.v16,
             TextField(
-              controller: _usernameController,
+              enabled: false,
+              controller: _birthdayController,
               decoration: InputDecoration(
-                hintText: "Username",
+                hintText: "Birthda",
                 enabledBorder: UnderlineInputBorder(
                   //활성화전 색상
                   borderSide: BorderSide(
@@ -110,11 +112,22 @@ class _UsernameScreenState extends State<UsernameScreen> {
             Gaps.v16,
             GestureDetector(
               onTap: _onNextTap,
-              child: FormButton(
-                disabled: _username.isEmpty,
+              child: const FormButton(
+                disabled: false,
               ),
             ),
           ],
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: SizedBox(
+          height: 300,
+          child: CupertinoDatePicker(
+            maximumDate: initialDate,
+            initialDateTime: initialDate,
+            mode: CupertinoDatePickerMode.date,
+            onDateTimeChanged: _setTextFieldDate,
+          ),
         ),
       ),
     );
